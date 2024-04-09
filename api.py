@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import bancoDeDados
 import sha256
+
 app = Flask(__name__)
 
 #api em flask que a partir dessa rota seleciona
@@ -34,10 +35,6 @@ def hash():
         #caso exista, mande uma mensagem via json dizendo que já existe esse hash no banco
         else:
             return jsonify({'mensagem': 'Hash já existente no banco de dados'})
-           
-
-        
-        
 
 app.run(debug=True)
 
