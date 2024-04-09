@@ -35,12 +35,9 @@ def adicionar_valores(hash):
 def selecionar_hash_do_banco(hash):
     conexao = sqlite3.connect('bd/trabalhoFlaskSha256.db')
     cursor = conexao.cursor()
-
-    arquivo = cursor.execute(f"SELECT * FROM arquivos where hash = {hash}")
+    arquivo = cursor.execute(f"SELECT * FROM arquivos where hash = (?)", (hash,))
     arquivo = arquivo.fetchone()
     conexao.close()
     return arquivo
 
-# criar_banco_de_dados()
-# adicionar_valores("1223456789")
-# print(selecionar_hash_do_banco("1223456789"))
+#criar_banco_de_dados()
