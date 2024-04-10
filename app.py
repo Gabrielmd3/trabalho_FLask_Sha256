@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, send_file
 from flask_wtf import FlaskForm
 from wtforms import FileField, SubmitField
 from werkzeug.utils import secure_filename
@@ -6,6 +6,7 @@ from wtforms.validators import InputRequired
 import bancoDeDados
 import os
 from calc_hash import calcular_hash_arquivo, limpar_diretorio_verificacao
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'v6Fre$zu7ZJHfcMn356#8c'
@@ -40,7 +41,7 @@ def registro():
         # A instância do método para a transformação do arquivo em Hash deve ser colocado aqui!
         hash = calcular_hash_arquivo(filepath) # arquivo já transformado em hash
 
-        bancoDeDados.adicionar_valores(hash) #método que adiciona o hash ao banco de dados
+        bancoDeDados.adicionar_valores(hash, file.filename) #método que adiciona o hash ao banco de dados
         return render_template('registrado.html')
     return render_template('registro.html', form=form)
     
@@ -55,13 +56,23 @@ def validacao():
         # A instância do método para a transformação do arquivo em Hash deve ser colocado aqui!
         hash = calcular_hash_arquivo(filepath) # arquivo já transformado em hash
 
-        resultado_banco =  bancoDeDados.selecionar_hash_do_banco(hash) #método para verificar se o hash existe ou não no banco, caso não exista retorna um None
-        resultado = "Válido" if resultado_banco != None else "Inválido" #verifica se o valor retornado do banco é válido ou não
+        resultadoDoBanco =  bancoDeDados.selecionar_hash_do_banco(hash) #método para verificar se o hash existe ou não no banco, caso não exista retorna um None
+        resultado = "Válido" if resultadoDoBanco != None else "Inválido" #verifica se o valor retornado do banco é válido ou não
 
         limpar_diretorio_verificacao()
 
         return render_template('resultado.html', resultado=resultado)
     return render_template('validacao.html', form=form)
-    
+
+@app.route('/arquivos')
+def arquivos():
+    arquivos = bancoDeDados.selecionar_todos_os_arquivos() # Recebe um dicionário contendo todos os arquivos registrados no banco de dados
+    return render_template('arquivos.html', arquivos=arquivos)
+
+@app.route('/baixar_arquivo/<arquivo>')
+def baixar_arquivo(arquivo):
+    diretorio = 'uploads' #pasta na qual estão os arquivos a serem baixados
+    return send_file(os.path.join(diretorio, arquivo), as_attachment=True) # envia para o usuario o arquivo selecionado
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
